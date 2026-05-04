@@ -37,8 +37,15 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c
 # ── quick correctness test ────────────────────────────────────────
 test: all
 	@echo "--- Running self-test ---"
-	@printf 'AAABBBCCCDDDEEEFFFGGGHHHIIIJJJKKKLLLMMMNNNOOOPPPQQQRRRSSSTTTUUUVVVWWWXXXYYYZZZ' \
-		> _test_in.txt
+	@# build a few KB of repetitive English-ish text so MTF + RLE-2
+	@# actually have something to chew on
+	@printf '' > _test_in.txt
+	@i=0; while [ $$i -lt 60 ]; do \
+		printf 'the quick brown fox jumps over the lazy dog. ' >> _test_in.txt; \
+		printf 'pack my box with five dozen liquor jugs. ' >> _test_in.txt; \
+		printf 'AAAAAABBBBBBCCCCCC...000111222333... ' >> _test_in.txt; \
+		i=$$((i+1)); \
+	done
 	./$(TARGET) compress   _test_in.txt  _test.bz
 	./$(TARGET) decompress _test.bz      _test_out.txt
 	@if diff -q _test_in.txt _test_out.txt > /dev/null 2>&1; then \

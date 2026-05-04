@@ -80,6 +80,16 @@ void bwt_encode(unsigned char *input,  size_t len,
 void bwt_decode(unsigned char *input,  size_t len,
                 int primary_index, unsigned char *output);
 
+/* Suffix-array based BWT (extra credit §8.2).  O(n log^2 n) vs
+ * matrix BWT's O(n^2 log n) — enables block sizes 100KB–900KB. */
+int *build_suffix_array(unsigned char *text, int n);
+void bwt_encode_sa(unsigned char *input, size_t len,
+                   unsigned char *output, int *primary_index);
+
+/* Selects which BWT encoder bwt_encode dispatches to.
+ * 0 = matrix (default, Stage 1 spec), 1 = suffix array. */
+void bwt_set_use_suffix_array(int use_sa);
+
 /* ================================================================
  *  Move-to-Front  (Stage 2 – stubs in stage 1)
  * ================================================================ */
