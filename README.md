@@ -175,6 +175,29 @@ make
 
 This creates the `bzip2_impl` binary and the `obj/`, `results/`, `benchmarks/` directories automatically.
 
+### Windows Build
+
+Since this project targets Linux/Ubuntu, the provided binary is a Linux ELF executable. To build on Windows:
+
+1. **Install MSYS2** (recommended):
+   - Download from: https://www.msys2.org/
+   - Install and run MSYS2 MSYS terminal
+   - Install build tools: `pacman -S gcc make`
+   - Run `make` in the project directory
+
+2. **Alternative: Use WSL**:
+   ```bash
+   wsl --install -d Ubuntu
+   # Then in WSL terminal:
+   cd /mnt/c/Users/YourUsername/source/repos/Compression-project
+   sudo apt update && sudo apt install gcc make
+   make
+   ```
+
+3. **PowerShell Build Script**:
+   - If you have MinGW installed, use: `.\build.ps1`
+   - Edit the script to set the correct compiler path if needed
+
 ### Other Targets
 
 | Command | Description |
