@@ -1,0 +1,31 @@
+# Build artifacts
+obj/
+*.o
+*.exe
+*.dll
+*.so
+bzip2_impl
+bzip2_impl.exe
+
+# IDE and editor files
+.vs/
+.vscode/
+*.swp
+*.swo
+*~
+.idea/
+
+# Test artifacts
+tests/temp/
+tests/results/test_results.log
+_test_in.txt
+_test.bz
+_test_out.txt
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
