@@ -31,7 +31,7 @@ typedef struct {
 
 /* Huffman structures (Stage 3) */
 typedef struct {
-    unsigned short code;
+    unsigned int   code;    /* widened from unsigned short — codes can exceed 16 bits */
     unsigned char  length;
 } HuffmanCode;
 

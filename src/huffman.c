@@ -259,7 +259,7 @@ void generate_canonical_codes(HuffmanNode *root, HuffmanCode *codes)
     for (int s = 0; s < 256; s++) {
         int l = lengths[s];
         if (l > 0) {
-            codes[s].code = (unsigned short)next_code[l];
+            codes[s].code = next_code[l];
             next_code[l]++;
         }
     }
