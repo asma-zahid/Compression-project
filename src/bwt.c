@@ -219,7 +219,7 @@ void bwt_encode(unsigned char *input, size_t len,
 }
 
 /* ----------------------------------------------------------------
- *  Inverse BWT — works for either encoder backend
+ *  Inverse BWT works for either encoder backend
  *
  *  Given L (last column) and primary_index:
  *    1. C[c] = number of symbols in L that are strictly less than c.
@@ -262,3 +262,4 @@ void bwt_decode(unsigned char *input, size_t len,
 
     free(LF);
 }
+ 
