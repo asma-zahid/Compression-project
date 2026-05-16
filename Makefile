@@ -7,12 +7,13 @@ SRCDIR  = src
 INCDIR  = include
 OBJDIR  = obj
 
-SOURCES = $(SRCDIR)/main.c    \
-          $(SRCDIR)/rle.c     \
-          $(SRCDIR)/bwt.c     \
-          $(SRCDIR)/block.c   \
-          $(SRCDIR)/mtf.c     \
-          $(SRCDIR)/huffman.c \
+SOURCES = $(SRCDIR)/main.c        \
+          $(SRCDIR)/rle.c         \
+          $(SRCDIR)/bwt.c         \
+          $(SRCDIR)/block.c       \
+          $(SRCDIR)/mtf.c         \
+          $(SRCDIR)/huffman.c     \
+          $(SRCDIR)/range_coder.c \
           $(SRCDIR)/config.c
 
 OBJECTS = $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SOURCES))

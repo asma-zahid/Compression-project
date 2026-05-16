@@ -72,9 +72,13 @@ static int compress_file(const char *in_path, const char *out_path,
         unsigned char *rle1_buf = (unsigned char *)malloc(orig_size * 2 + 16);
         size_t rle1_sz = 0;
 
-        if (cfg->rle1_enabled)
-            rle1_encode(blk->data, orig_size, rle1_buf, &rle1_sz);
-        else {
+        if (cfg->rle1_enabled) {
+            if (cfg->rle1_enhanced)
+                rle1_encode_enh(blk->data, orig_size, rle1_buf, &rle1_sz,
+                                cfg->rle1_threshold, cfg->rle1_adaptive);
+            else
+                rle1_encode(blk->data, orig_size, rle1_buf, &rle1_sz);
+        } else {
             memcpy(rle1_buf, blk->data, orig_size);
             rle1_sz = orig_size;
         }
@@ -101,15 +105,21 @@ static int compress_file(const char *in_path, const char *out_path,
             rle2_sz = rle1_sz;
         }
 
-        /* --- Huffman encode --- */
-        /* Worst-case Huffman output = 256-byte header + ceil(rle2_sz * max_len / 8).
-         * With max_len capped at 32 bits per symbol, allocate generously. */
-        unsigned char *huff_buf = (unsigned char *)malloc(256 + rle2_sz * 4 + 16);
+        /* --- Entropy encode (Huffman default; range coder via config) ---
+         * Worst-case sizes:
+         *   Huffman : 256-byte length header + ceil(rle2_sz * 32 / 8) bits
+         *   Range   : 1024-byte freq header + ~rle2_sz + 5 bytes
+         * Allocate enough for either. */
+        unsigned char *huff_buf = (unsigned char *)malloc(1024 + rle2_sz * 4 + 32);
         size_t huff_sz = 0;
-        if (cfg->huffman_enabled)
-            huffman_encode(rle2_buf, rle2_sz, huff_buf, &huff_sz);
-        else {
-            /* No Huffman: write a sentinel zero header + raw payload. */
+        int use_range = (strcmp(cfg->entropy_coder, "range") == 0);
+        if (cfg->huffman_enabled) {
+            if (use_range)
+                range_encode(rle2_buf, rle2_sz, huff_buf, &huff_sz);
+            else
+                huffman_encode(rle2_buf, rle2_sz, huff_buf, &huff_sz);
+        } else {
+            /* No entropy coding: write a sentinel zero header + raw payload. */
             memset(huff_buf, 0, 256);
             memcpy(huff_buf + 256, rle2_buf, rle2_sz);
             huff_sz = 256 + rle2_sz;
@@ -241,10 +251,13 @@ static int decompress_file(const char *in_path, const char *out_path,
             return -1;
         }
 
-        /* --- inverse Huffman --- */
+        /* --- inverse entropy (Huffman or range coder) --- */
         size_t produced = (size_t)rle2_32;     /* expected output */
         if (cfg->huffman_enabled) {
-            huffman_decode(huff_buf, huff_32, rle2_buf, &produced);
+            if (strcmp(cfg->entropy_coder, "range") == 0)
+                range_decode(huff_buf, huff_32, rle2_buf, &produced);
+            else
+                huffman_decode(huff_buf, huff_32, rle2_buf, &produced);
         } else {
             /* Bypass: skip 256-byte sentinel header, copy raw. */
             if (huff_32 < 256) {
@@ -288,9 +301,12 @@ static int decompress_file(const char *in_path, const char *out_path,
 
         /* --- inverse RLE-1 --- */
         size_t decoded = 0;
-        if (cfg->rle1_enabled)
-            rle1_decode(rle1_buf, rle1_32, orig_buf, &decoded);
-        else {
+        if (cfg->rle1_enabled) {
+            if (cfg->rle1_enhanced)
+                rle1_decode_enh(rle1_buf, rle1_32, orig_buf, &decoded);
+            else
+                rle1_decode(rle1_buf, rle1_32, orig_buf, &decoded);
+        } else {
             memcpy(orig_buf, rle1_buf, rle1_32);
             decoded = rle1_32;
         }

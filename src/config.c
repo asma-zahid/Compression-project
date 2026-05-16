@@ -30,6 +30,12 @@ Config *load_config(const char *filename)
     strncpy(cfg->input_directory,  "./benchmarks/", sizeof(cfg->input_directory)  - 1);
     strncpy(cfg->output_directory, "./results/",    sizeof(cfg->output_directory) - 1);
 
+    /* extra-credit defaults: keep legacy behavior unless explicitly enabled */
+    cfg->rle1_enhanced   = 0;
+    cfg->rle1_threshold  = 4;
+    cfg->rle1_adaptive   = 1;
+    strncpy(cfg->entropy_coder, "huffman", sizeof(cfg->entropy_coder) - 1);
+
     FILE *f = fopen(filename, "r");
     if (!f) {
         fprintf(stderr, "Warning: config file '%s' not found - using defaults.\n", filename);
@@ -69,6 +75,11 @@ Config *load_config(const char *filename)
             else if (strcmp(key, "mtf_enabled")     == 0) cfg->mtf_enabled     = (strcmp(val, "true") == 0);
             else if (strcmp(key, "rle2_enabled")    == 0) cfg->rle2_enabled    = (strcmp(val, "true") == 0);
             else if (strcmp(key, "huffman_enabled") == 0) cfg->huffman_enabled = (strcmp(val, "true") == 0);
+            /* extra credit §8.1 / §8.3 */
+            else if (strcmp(key, "rle1_enhanced")   == 0) cfg->rle1_enhanced   = (strcmp(val, "true") == 0);
+            else if (strcmp(key, "rle1_threshold")  == 0) cfg->rle1_threshold  = atoi(val);
+            else if (strcmp(key, "rle1_adaptive")   == 0) cfg->rle1_adaptive   = (strcmp(val, "true") == 0);
+            else if (strcmp(key, "entropy_coder")   == 0) strncpy(cfg->entropy_coder, val, sizeof(cfg->entropy_coder) - 1);
         } else if (strcmp(section, "Performance") == 0) {
             if      (strcmp(key, "benchmark_mode") == 0) cfg->benchmark_mode = (strcmp(val, "true") == 0);
             else if (strcmp(key, "output_metrics") == 0) cfg->output_metrics = (strcmp(val, "true") == 0);
@@ -83,6 +94,10 @@ Config *load_config(const char *filename)
     /* clamp block_size to spec range 100 KB - 900 KB */
     if (cfg->block_size < 102400)  cfg->block_size = 102400;
     if (cfg->block_size > 921600)  cfg->block_size = 921600;
+
+    /* clamp threshold to encoder's valid range */
+    if (cfg->rle1_threshold < 2)   cfg->rle1_threshold = 2;
+    if (cfg->rle1_threshold > 255) cfg->rle1_threshold = 255;
 
     return cfg;
 }
@@ -105,4 +120,8 @@ void print_config(const Config *cfg)
     printf("  output_metrics  : %s\n",          cfg->output_metrics  ? "true" : "false");
     printf("  input_directory : %s\n",          cfg->input_directory);
     printf("  output_directory: %s\n",          cfg->output_directory);
+    printf("  rle1_enhanced   : %s\n",          cfg->rle1_enhanced   ? "true" : "false");
+    printf("  rle1_threshold  : %d\n",          cfg->rle1_threshold);
+    printf("  rle1_adaptive   : %s\n",          cfg->rle1_adaptive   ? "true" : "false");
+    printf("  entropy_coder   : %s\n",          cfg->entropy_coder);
 }
